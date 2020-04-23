@@ -2,7 +2,7 @@
 // Project: https://github.com/ioBroker/ioBroker, http://iobroker.net
 // Definitions by: AlCalzone <https://github.com/AlCalzone>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.6
+// TypeScript Version: 3.7
 
 // Note: This is not the definition for the package `iobroker`,
 // which is just an installer, not a library.
@@ -61,10 +61,15 @@ declare global {
         type ObjectType = 'state' | 'channel' | 'device';
         type CommonType = 'number' | 'string' | 'boolean' | 'array' | 'object' | 'mixed' | 'file';
 
-        // Maybe this should extend Record<string, any>,
-        // but the extra properties aren't defined anywhere,
-        // so I'd rather force the user to explicitly state
-        // they know what they're doing by casting to any
+        // Objects are JSON-serializable
+        type ObjectField =
+            | string
+            | number
+            | boolean
+            | null
+            | ObjectField[]
+            | {[property: string]: ObjectField};
+
         interface ObjectCommon {
             /** name of this object */
             name: string;
@@ -97,6 +102,16 @@ declare global {
             write: boolean;
             /** role of the state (used in user interfaces to indicate which widget to choose) */
             role: string;
+
+            /** Configures this state as an alias for another state */
+            alias?: {
+                /** The target state id */
+                id: string;
+                /** An optional conversion function when reading, e.g. `"(val − 32) * 5/9"` */
+                read?: string;
+                /** An optional conversion function when reading, e.g. `"(val * 9/5) + 32"` */
+                write?: string;
+            };
 
             /**
              * Dictionary of possible values for this state in the form
@@ -134,7 +149,7 @@ declare global {
             // TODO: any other definition for device?
         }
         interface OtherCommon extends ObjectCommon {
-            [propName: string]: any;
+            [propName: string]: ObjectField | undefined;
 
             // Only states can have common.custom
             custom?: undefined;
@@ -143,13 +158,15 @@ declare global {
         interface BaseObject {
             /** The ID of this object */
             _id: string;
-            native: Record<string, any>;
+            // Be strict with what we allow here. Read objects overwrite this with any.
+            native: Record<string, ObjectField>;
             /** An array of `native` properties which cannot be accessed from outside the defining adapter */
             protectedNative?: string[];
             /** Like protectedNative, but the properties are also encrypted and decrypted automatically */
             encryptedNative?: string[];
             enums?: Record<string, string>;
             type: string; // specified in the derived interfaces
+            // Be strict with what we allow here. Read objects overwrite this with any.
             common: StateCommon | ChannelCommon | DeviceCommon | OtherCommon;
             acl?: ObjectACL;
             from?: string;
@@ -200,15 +217,28 @@ declare global {
             common?: Partial<ObjectCommon>;
         }
 
-        type Object = StateObject | ChannelObject | DeviceObject | FolderObject | OtherObject;
+        // Base type for Objects. Should not be used directly
+        type AnyObject = StateObject | ChannelObject | DeviceObject | FolderObject | OtherObject;
 
-        type SettableObjectWorker<T extends ioBroker.Object> = Pick<T, Exclude<keyof T, '_id' | 'acl'>> & {
+        // For all objects that are exposed to the user we need to tone the strictness down.
+        // Otherwise, every operation on objects becomes a pain to work with
+        type Object = AnyObject & {
+            common: Record<string, any>;
+            native: Record<string, any>;
+        };
+
+        type SettableObjectWorker<T extends ioBroker.AnyObject> = Pick<T, Exclude<keyof T, '_id' | 'acl'>> & {
             _id?: T['_id'];
             acl?: T['acl'];
         };
 
         // In set[Foreign]Object[NotExists] methods, the ID and acl of the object is optional
-        type SettableObject = SettableObjectWorker<ioBroker.Object>;
+        type SettableObject =
+            | SettableObjectWorker<StateObject>
+            | SettableObjectWorker<ChannelObject>
+            | SettableObjectWorker<DeviceObject>
+            | SettableObjectWorker<FolderObject>
+            | SettableObjectWorker<OtherObject>;
         type PartialObject = PartialStateObject | PartialChannelObject | PartialDeviceObject | PartialFolderObject | PartialOtherObject;
 
         /** Defines access rights for a single file */
@@ -762,18 +792,18 @@ declare global {
             getForeignObjectsAsync(
                 pattern: string,
                 options?: unknown,
-            ): Promise<CallbackReturnTypeOf<GetObjectsCallback>>;
+            ): Promise<NonNullCallbackReturnTypeOf<GetObjectsCallback>>;
             getForeignObjectsAsync(
                 pattern: string,
                 type: ObjectType,
                 options?: unknown,
-            ): Promise<CallbackReturnTypeOf<GetObjectsCallback>>;
+            ): Promise<NonNullCallbackReturnTypeOf<GetObjectsCallback>>;
             getForeignObjectsAsync(
                 pattern: string,
                 type: ObjectType,
                 enums: EnumList,
                 options?: unknown,
-            ): Promise<CallbackReturnTypeOf<GetObjectsCallback>>;
+            ): Promise<NonNullCallbackReturnTypeOf<GetObjectsCallback>>;
             /** Creates or overwrites an object (which might not belong to this adapter) in the object db */
             setForeignObject(id: string, obj: ioBroker.SettableObject, callback?: SetObjectCallback): void;
             setForeignObject(
@@ -908,24 +938,24 @@ declare global {
             // tslint:disable:unified-signatures
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options: unknown,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateCallback,
@@ -933,41 +963,41 @@ declare global {
             /** Writes a value into the states DB. */
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack?: boolean,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options?: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             /** Writes a value into the states DB only if it has changed. */
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options: unknown,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateChangedCallback,
@@ -975,41 +1005,41 @@ declare global {
             /** Writes a value into the states DB only if it has changed. */
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack?: boolean,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options?: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
             /** Writes a value (which might not belong to this adapter) into the states DB. */
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options: unknown,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateCallback,
@@ -1017,41 +1047,41 @@ declare global {
             /** Writes a value (which might not belong to this adapter) into the states DB. */
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack?: boolean,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options?: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
             /** Writes a value (which might not belong to this adapter) into the states DB only if it has changed. */
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options: unknown,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateChangedCallback,
@@ -1059,17 +1089,17 @@ declare global {
             /** Writes a value (which might not belong to this adapter) into the states DB only if it has changed. */
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack?: boolean,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 options?: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState,
+                state: string | number | boolean | State | SettableState | null,
                 ack: boolean,
                 options: unknown,
             ): Promise<NonNullCallbackReturnTypeOf<SetStateChangedCallback>>;
