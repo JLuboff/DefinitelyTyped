@@ -108,6 +108,9 @@ export interface ApiClient {
     constructFromObject: { (data: any, obj: any, itemType: any): void };
 }
 
+export interface CompareDocumentDocx {
+    (inputFile1: Buffer, inputFile2: Buffer, callback: (error: any, data: string, response: any) => any): any
+}
 export interface CompareDocumentApi {
     /**
      * Compare two Office Word Documents (docx) files and highlight the differences
@@ -118,5 +121,44 @@ export interface CompareDocumentApi {
      * @param callback
      * function
      */
-    compareDocumentDocx: any;
+    compareDocumentDocx: CompareDocumentDocx;
 }
+
+export class CompareDocumentApi implements CompareDocumentApi {
+    constructor(apiClient?: ApiClient);
+    compareDocumentDocx: CompareDocumentDocx;
+}
+
+interface ConvertDataCsvToJsonOptions {
+    /**
+     * Boolean | Optional; If true, the first row will be used as the labels for the columns; 
+     * if false, columns will be named Column0, Column1, etc.  
+     * Default is true.  Set to false if you are not using column headings, or have an irregular column structure.
+     */
+columnNamesFromFirstRow: boolean
+}
+export interface ConvertDataCsvToJson {
+    (inputFile: Buffer, opts: ConvertDataCsvToJsonOptions, callback:(error: any, data: object, response: any) => any) : any
+}
+
+export interface ConvertDataApi {
+    /**
+     * Convert a CSV file to a JSON object array
+     * @param inputFile
+     * buffer
+     * @param opts
+     * object - optional parameters
+     * @param opts.columnNamesFromFirstRow
+     * boolean | Optional; If true, the first row will be used as the labels for the columns;
+     * if false, columns will be named Column0, Column1, etc.
+     * Default is true.  Set to false if you are not using column headings, or have an irregular column structure.
+     */
+    convertDataCsvToJson: ConvertDataCsvToJson;
+}
+
+export class ConvertDataApi implements ConvertDataApi {
+    constructor(apiClient?: ApiClient);
+    convertDataCsvToJson: ConvertDataCsvToJson
+}
+
+export const ApiClient: ApiClient;
