@@ -262,7 +262,7 @@ export interface ConvertDataXmlEditRemoveAllChildNodesWithXPath {
 }
 
 export interface ConvertDataJsonToXml {
-    (jsonObject: object, callback: (error: any, data: string, response: any) => any): any;
+    (jsonObject: object, callback: (error: any, data: Buffer, response: any) => any): any;
 }
 
 export interface ConvertDataApi {
@@ -464,6 +464,14 @@ export class ConvertDataApi implements ConvertDataApi {
     convertDataXmlRemoveWithXPath: ConvertDataXmlRemoveWithXPath;
     convertDataXmlEditRemoveAllChildNodesWithXPath: ConvertDataXmlEditRemoveAllChildNodesWithXPath;
     convertDataJsonToXml: ConvertDataJsonToXml;
+}
+
+export interface ConvertDocumentApi {
+
+}
+
+export class ConvertDocumentApi implements ConvertDocumentApi {
+    constructor(apiClient?: ApiClient);
 }
 
 export const ApiClient: ApiClient;
