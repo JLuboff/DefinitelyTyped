@@ -182,15 +182,15 @@ export interface ConvertDataXmlQueryWithXQueryMulti {
         xQuery: string,
         opts: {
             inputFile2: Buffer;
-            inputFile3: Buffer;
-            inputFile4: Buffer;
-            inputFile5: Buffer;
-            inputFile6: Buffer;
-            inputFile7: Buffer;
-            inputFile8: Buffer;
-            inputFile9: Buffer;
-            inputFile10: Buffer;
-        },
+            inputFile3?: Buffer;
+            inputFile4?: Buffer;
+            inputFile5?: Buffer;
+            inputFile6?: Buffer;
+            inputFile7?: Buffer;
+            inputFile8?: Buffer;
+            inputFile9?: Buffer;
+            inputFile10?: Buffer;
+        } | {},
         callback: (error: any, data: XmlQueryWithXQueryResult, response: any) => any,
     ): any;
 }
@@ -309,7 +309,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlToJson: ConvertDataToJson;
     /**
-     * Return the reuslts of filtering, selecting an XML document with an XPath expression
+     * Return the results of filtering, selecting an XML document with an XPath expression
      * @param xPathExpression
      * string
      * @param inputFile
@@ -320,7 +320,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlFilterWithXPath: ConvertDataXmlFilterWithXPath;
     /**
-     * Return the reuslts of querying a single XML document with an XQuery expression. Supports XQuery 3.1 and earlier. This API is optimized for a single XML document as input.
+     * Return the results of querying a single XML document with an XQuery expression. Supports XQuery 3.1 and earlier. This API is optimized for a single XML document as input.
      * Provided XML document is automatically loaded as the default context;
      * to access elements in the document, simply refer to them without a document reference, such as bookstore/book.
      * @param inputFile
@@ -333,7 +333,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlQueryWithXQuery: ConvertDataXmlQueryWithXQuery;
     /**
-     * Return the reuslts of querying an XML document with an XQuery expression. Supports XQuery 3.1 and earlier.
+     * Return the results of querying an XML document with an XQuery expression. Supports XQuery 3.1 and earlier.
      * This API is optimized for multiple XML documents as input. You can refer to the contents of a given document by name, for example doc("books.xml") or doc("restaurants.xml")
      * if you included two input files named books.xml and restaurants.xml. If input files contain no file name, they will default to file names input1.xml, input2.xml and so on.
      * @param inputFile
@@ -350,7 +350,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlQueryWithXQueryMulti: ConvertDataXmlQueryWithXQueryMulti;
     /**
-     * Return the reuslts of editing an XML document by setting the contents of all of the nodes that match an input XPath expression. Supports elements and attributes.
+     * Return the results of editing an XML document by setting the contents of all of the nodes that match an input XPath expression. Supports elements and attributes.
      * @param inputFile
      * buffer
      * @param xPathExpression
@@ -363,7 +363,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlEditSetValueWithXPath: ConvertDataXmlEditSetValueWithXPath;
     /**
-     * Return the reuslts of editing an XML document by replacing all of the nodes that match an input XPath expression with a new XML node expression.
+     * Return the results of editing an XML document by replacing all of the nodes that match an input XPath expression with a new XML node expression.
      * @param inputFile
      * buffer
      * @param xPathExpression
@@ -376,7 +376,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlEditReplaceWithXPath: ConvertDataXmlEditReplaceWithXPath;
     /**
-     * Return the reuslts of editing an XML document by adding an XML node as a child to all of the nodes that match an input XPath expression.
+     * Return the results of editing an XML document by adding an XML node as a child to all of the nodes that match an input XPath expression.
      * @param inputFile
      * buffer
      * @param xPathExpression
@@ -389,7 +389,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlEditAddChildWithXPath: ConvertDataXmlEditAddChildWithXPath;
     /**
-     * Return the reuslts of editing an XML document by adding an attribute to all of the nodes that match an input XPath expression.
+     * Return the results of editing an XML document by adding an attribute to all of the nodes that match an input XPath expression.
      * @param inputFile
      * buffer
      * @param xPathExpression
@@ -404,7 +404,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlEditAddAttributeWithXPath: ConvertDataXmlEditAddAttributeWithXPath;
     /**
-     * Return the reuslts of editing an XML document by removing all of the nodes that match an input XPath expression
+     * Return the results of editing an XML document by removing all of the nodes that match an input XPath expression
      * @param xPathExpression
      * string
      * @param inputFile
@@ -415,7 +415,7 @@ export interface ConvertDataApi {
      */
     convertDataXmlRemoveWithXPath: ConvertDataXmlRemoveWithXPath;
     /**
-     * Return the reuslts of editing an XML document by removing all child nodes of the nodes that match an input XPath expression.
+     * Return the results of editing an XML document by removing all child nodes of the nodes that match an input XPath expression.
      * @param inputFile
      * buffer
      * @param xPathExpression
