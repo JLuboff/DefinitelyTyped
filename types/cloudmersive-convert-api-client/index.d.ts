@@ -180,17 +180,19 @@ export interface ConvertDataXmlQueryWithXQueryMulti {
     (
         inputFile: Buffer,
         xQuery: string,
-        opts: {
-            inputFile2: Buffer;
-            inputFile3?: Buffer;
-            inputFile4?: Buffer;
-            inputFile5?: Buffer;
-            inputFile6?: Buffer;
-            inputFile7?: Buffer;
-            inputFile8?: Buffer;
-            inputFile9?: Buffer;
-            inputFile10?: Buffer;
-        } | {},
+        opts:
+            | {
+                  inputFile2: Buffer;
+                  inputFile3?: Buffer;
+                  inputFile4?: Buffer;
+                  inputFile5?: Buffer;
+                  inputFile6?: Buffer;
+                  inputFile7?: Buffer;
+                  inputFile8?: Buffer;
+                  inputFile9?: Buffer;
+                  inputFile10?: Buffer;
+              }
+            | {},
         callback: (error: any, data: XmlQueryWithXQueryResult, response: any) => any,
     ): any;
 }
@@ -260,9 +262,14 @@ export interface ConvertDataXmlEditRemoveAllChildNodesWithXPath {
         callback: (error: any, data: XmlSetValuesResult, response: any) => any,
     ): any;
 }
-
+interface ConvertDocumentResult {
+    Successful: boolean;
+    TextResult: string;
+}
+type BufferReturnCB = (error: any, data: Buffer, response: any) => any;
+type TextReturnCB = (error: any, data: ConvertDocumentResult, response: any) => any
 export interface ConvertDataJsonToXml {
-    (jsonObject: object, callback: (error: any, data: Buffer, response: any) => any): any;
+    (jsonObject: object, callback: BufferReturnCB): any;
 }
 
 export interface ConvertDataApi {
@@ -466,12 +473,214 @@ export class ConvertDataApi implements ConvertDataApi {
     convertDataJsonToXml: ConvertDataJsonToXml;
 }
 
-export interface ConvertDocumentApi {
+export interface ConvertDocument {
+    (inputFile: Buffer, callback: BufferReturnCB): any;
+}
+type TextFormattingMode = 'preserveWhitespace' | 'minimizeWhitespace';
+interface ConvertDocumentDocxToTxtOptions {
+    textFormattingMode: TextFormattingMode;
+}
 
+export interface ConvertDocumentDocxToTxt {
+    (
+        inputFile: Buffer,
+        opts: ConvertDocumentDocxToTxtOptions | {},
+        callback: TextReturnCB,
+    ): any;
+}
+export interface ConvertDocumentToTxt {
+    (inputFile: Buffer, callback: TextReturnCB): any
+}
+
+export interface ConvertDocumentXlsxToCsv {
+    (inputFile: Buffer, outputEncoding: 'UTF-8' | 'UTF-32', callback: TextReturnCB): any
+}
+
+export interface ConvertDocumentApi {
+    /**
+     * Convert Office Word Documents (docx) to standard PDF
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentDocxToPdf: ConvertDocument;
+    /**
+     * Convert Office Word Documents (docx) to text
+     * @param inputFile
+     * buffer
+     * @param opts
+     * ConvertDocumentDocxToTxtOptions | {}
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentDocxToTxt: ConvertDocumentDocxToTxt;
+    /**
+     * Convert Office Word (97-2003 Format) Documents (doc) to standard PDF
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentDocToPdf: ConvertDocument;
+    /**
+     * Convert/upgrade Office Word (97-2003 Format) Documents (doc) to the modern DOCX format
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentDocToDocx: ConvertDocument;
+    /**
+     * Convert Office Word DOC (97-03) Document (doc) to text
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentDocToTxt: ConvertDocumentToTxt;
+    /**
+     * Convert Office PowerPoint Documents (pptx) to standard PDF
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentPptxToPdf: ConvertDocument;
+    /**
+     * Convert Office PowerPoint Documents (pptx) to standard Text
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentPptxToTxt: ConvertDocumentToTxt;
+    /**
+     * Convert Office PowerPoint (97-2003) Documents (ppt) to standard PDF
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentPptToPdf: ConvertDocument;
+    /**
+     * Convert/upgrade Office PowerPoint (97-2003) Documents (ppt) to modern PPTX
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentPptToPptx: ConvertDocument;
+    /**
+     * Convert Office Excel Workbooks (XLSX) to standard PDF. Converts all worksheets in the workbook to PDF.
+     * Supports both XLSX and XLSB Excel file formats.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsxToPdf: ConvertDocument;
+    /**
+     * Convert Office Excel Workbooks (XLSX) to standard Text. Converts all worksheets in the workbook to Text.
+     * Supports both XLSX and XLSB file formats. When a spreadsheet contains multiple worksheets, will export
+     * all of the text from all of the worksheets. If you wish to export the text from only one worksheet,
+     * try using the Split XLSX API to split the spreadsheet into multiple worksheet files, and then run XLSX
+     * to Text on the individual worksheet file that you need to extract the text from.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsxToTxt: ConvertDocumentToTxt;
+    /**
+     * Convert Office Excel (97-2003) Workbooks (xls) to standard PDF. Converts all worksheets in the workbook to PDF.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsToPdf: ConvertDocument;
+    /**
+     * Convert/upgrade Office Excel (97-2003) Workbooks (xls) to modern XLSX format.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsToXlsx: ConvertDocument;
+    /**
+     * Convert/upgrade Office Excel (97-2003) Workbooks (xls) to standard CSV format.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsToCsv: ConvertDocument;
+    /**
+     * Convert CSV file to Office Excel XLSX Workbooks file format.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentCsvToXlsx: ConvertDocument;
+    /**
+     * Convert Office Excel Workbooks (XLSX) to standard Comma-Separated Values (CSV) format. Supports both XLSX and XLSB file Excel formats.
+     * @param inputFile
+     * buffer
+     * @param outputEncoding
+     * 'UTF-8' | 'UTF-32'
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentXlsxToCsv: ConvertDocumentXlsxToCsv;
+    /**
+     * Convert standard HTML, with full support for CSS, JavaScript, Images, and other complex behavior to PDF. 
+     * To use external files such as images, use an absolute URL to the file.
+     * @param inputFile
+     * buffer
+     * @param callback
+     * function - The callback function, accepting three arguments:
+     * error, data, response
+     */
+    convertDocumentHtmlToPdf: ConvertDocument;
 }
 
 export class ConvertDocumentApi implements ConvertDocumentApi {
-    constructor(apiClient?: ApiClient);
-}
+           constructor(apiClient?: ApiClient);
+           convertDocumentDocxToPdf: ConvertDocument;
+           convertDocumentDocxToTxt: ConvertDocumentDocxToTxt;
+           convertDocumentDocToPdf: ConvertDocument;
+           convertDocumentDocToDocx: ConvertDocument;
+           convertDocumentDocToTxt: ConvertDocumentToTxt;
+           convertDocumentPptxToPdf: ConvertDocument;
+           convertDocumentPptxToTxt: ConvertDocumentToTxt;
+           convertDocumentPptToPdf: ConvertDocument;
+           convertDocumentPptToPptx: ConvertDocument;
+           convertDocumentXlsxToPdf: ConvertDocument;
+           convertDocumentXlsxToTxt: ConvertDocumentToTxt;
+           convertDocumentXlsToPdf: ConvertDocument;
+           convertDocumentXlsToXlsx: ConvertDocument;
+           convertDocumentXlsToCsv: ConvertDocument;
+           convertDocumentCsvToXlsx: ConvertDocument;
+           convertDocumentXlsxToCsv: ConvertDocumentXlsxToCsv;
+           convertDocumentHtmlToPdf: ConvertDocument;
+       }
 
 export const ApiClient: ApiClient;
